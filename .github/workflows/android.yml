@@ -9,20 +9,20 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Download source
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Extract project ZIP
+      - name: Extract exact 3.7.3 source
         run: |
-          ZIP=$(find . -maxdepth 1 -iname 'BILYARD*.zip' | head -n 1)
-          if [ -z "$ZIP" ]; then
-            echo "ZIP fayl topilmadi"
-            exit 1
-          fi
-          mkdir source
+          ZIP="BILYARD_PRO_ULTRA_3.7.3_SOURCE.zip"
+          test -f "$ZIP" || { echo "3.7.3 ZIP not found"; exit 1; }
+          mkdir -p source
           unzip -q "$ZIP" -d source
+          PROJECT_DIR="$(dirname "$(find source -name settings.gradle -print -quit)")"
+          test -n "$PROJECT_DIR" || { echo "settings.gradle not found"; exit 1; }
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+          echo "Building from $PROJECT_DIR"
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -36,13 +36,12 @@ jobs:
           gradle-version: '8.9'
 
       - name: Build APK
-        run: |
-          PROJECT_DIR=$(dirname "$(find source -name settings.gradle -print -quit)")
-          cd "$PROJECT_DIR"
-          gradle assembleDebug
+        run: gradle -p "$PROJECT_DIR" assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: BILYARD-PRO-ULTRA-APK
+          name: BILYARD-PRO-ULTRA-3.7.3-APK
           path: source/**/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          
