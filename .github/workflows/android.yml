@@ -1,4 +1,4 @@
-name: Build BILYARD PRO ULTRA APK
+name: Build BILYARD PRO ULTRA 3.7.5 APK
 
 on:
   workflow_dispatch:
@@ -14,16 +14,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Extract exact 3.7.4 source
+      - name: Extract 3.7.5 source
+        shell: bash
         run: |
-          ZIP="BILYARD_PRO_ULTRA_3.7.4_SOURCE.zip"
-          test -f "$ZIP" || { echo "3.7.4 ZIP not found"; exit 1; }
+          ZIP="BILYARD_PRO_ULTRA_3.7.5_SOURCE.zip"
+
+          if [ ! -f "$ZIP" ]; then
+            echo "ERROR: 3.7.5 ZIP topilmadi!"
+            exit 1
+          fi
+
           mkdir -p source
           unzip -q "$ZIP" -d source
-          PROJECT_DIR="$(dirname "$(find source -name settings.gradle -print -quit)")"
-          test -n "$PROJECT_DIR" || { echo "settings.gradle not found"; exit 1; }
+
+          PROJECT_FILE=$(find source -type f \( -name settings.gradle -o -name settings.gradle.kts \) | head -n 1)
+
+          if [ -z "$PROJECT_FILE" ]; then
+            echo "ERROR: Gradle loyiha topilmadi!"
+            exit 1
+          fi
+
+          PROJECT_DIR=$(dirname "$PROJECT_FILE")
           echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
-          echo "Building from $PROJECT_DIR"
+
+          echo "3.7.5 loyiha topildi: $PROJECT_DIR"
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -39,9 +53,9 @@ jobs:
       - name: Build APK
         run: gradle -p "$PROJECT_DIR" assembleDebug
 
-      - name: Upload APK
+      - name: Upload 3.7.5 APK
         uses: actions/upload-artifact@v4
         with:
-          name: BILYARD-PRO-ULTRA-3.7.4-APK
+          name: BILYARD-PRO-ULTRA-3.7.5-APK
           path: source/**/build/outputs/apk/debug/*.apk
           if-no-files-found: error
