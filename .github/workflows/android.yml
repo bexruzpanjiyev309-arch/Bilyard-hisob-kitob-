@@ -1,4 +1,4 @@
-name: Build BILYARD PRO ULTRA LICENSE APK
+name: Build BILYARD PRO ULTRA FIRESTORE
 
 on:
   workflow_dispatch:
@@ -14,12 +14,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Extract license project
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Extract Firebase License ZIP
+        shell: bash
         run: |
-          ZIP="BILYARD_PRO_ULTRA_3.7.8_LICENSE_ANDROID_STEP2.zip"
+          ZIP="BILYARD_PRO_ULTRA_3.7.8_FIRESTORE_FREE_TEST.zip"
 
           if [ ! -f "$ZIP" ]; then
-            echo "LICENSE STEP 2 ZIP TOPILMADI!"
+            echo "ZIP fayl topilmadi!"
             ls -lah
             exit 1
           fi
@@ -34,18 +46,7 @@ jobs:
             exit 1
           fi
 
-          echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.9'
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Build APK
         run: gradle -p "$PROJECT_DIR" assembleDebug
@@ -53,6 +54,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: BILYARD-PRO-ULTRA-LICENSE-APK
+          name: BILYARD-PRO-ULTRA-FIRESTORE-TEST
           path: source/BILYARD_PRO_ULTRA_3.0/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
