@@ -1,4 +1,4 @@
-name: Build BILYARD PRO ULTRA 3.7.8 APK
+name: Build BILYARD PRO ULTRA 3.7.9
 
 on:
   workflow_dispatch:
@@ -14,32 +14,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Extract 3.7.8 source
-        shell: bash
-        run: |
-          ZIP="BILYARD_PRO_ULTRA_3.7.8_SOURCE_FIXED.zip"
-
-          if [ ! -f "$ZIP" ]; then
-            echo "3.7.8 FIXED ZIP topilmadi!"
-            ls -lah
-            exit 1
-          fi
-
-          mkdir -p source
-          unzip -q "$ZIP" -d source
-
-          PROJECT_FILE=$(find source -type f \( -name settings.gradle -o -name settings.gradle.kts \) | head -n 1)
-
-          if [ -z "$PROJECT_FILE" ]; then
-            echo "Gradle loyiha topilmadi!"
-            exit 1
-          fi
-
-          PROJECT_DIR=$(dirname "$PROJECT_FILE")
-          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
-
-          echo "3.7.8 loyiha topildi: $PROJECT_DIR"
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -51,12 +25,34 @@ jobs:
         with:
           gradle-version: '8.9'
 
+      - name: Extract 3.7.9 source
+        run: |
+          ZIP="BILYARD_PRO_ULTRA_3.7.9_PREMIUM_CUSTOMERS_SOURCE.zip"
+
+          if [ ! -f "$ZIP" ]; then
+            echo "3.7.9 ZIP topilmadi!"
+            ls -lah
+            exit 1
+          fi
+
+          mkdir -p source
+          unzip -q "$ZIP" -d source
+
+          PROJECT_DIR="source/BILYARD_PRO_ULTRA_3.0"
+
+          if [ ! -f "$PROJECT_DIR/settings.gradle" ]; then
+            echo "Android loyiha topilmadi!"
+            exit 1
+          fi
+
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+
       - name: Build APK
         run: gradle -p "$PROJECT_DIR" assembleDebug
 
-      - name: Upload 3.7.8 APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: BILYARD-PRO-ULTRA-3.7.8-APK
-          path: source/**/build/outputs/apk/debug/*.apk
+          name: BILYARD-PRO-ULTRA-3.7.9-APK
+          path: source/BILYARD_PRO_ULTRA_3.0/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
