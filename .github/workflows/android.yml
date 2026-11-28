@@ -14,4 +14,45 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Extract
+      - name: Extract 3.7.9 OFFLINE source
+        run: |
+          ZIP="BILYARD_PRO_ULTRA_3.7.9_OFFLINE_NO_FIREBASE_SOURCE.zip"
+
+          if [ ! -f "$ZIP" ]; then
+            echo "3.7.9 ZIP topilmadi!"
+            ls -lah
+            exit 1
+          fi
+
+          mkdir -p source
+          unzip -q "$ZIP" -d source
+
+          PROJECT_DIR="source/BILYARD_PRO_ULTRA_3.0"
+
+          if [ ! -f "$PROJECT_DIR/settings.gradle" ]; then
+            echo "Android loyiha topilmadi!"
+            exit 1
+          fi
+
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build APK
+        run: gradle -p "$PROJECT_DIR" assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BILYARD-PRO-ULTRA-3.7.9-OFFLINE-APK
+          path: source/BILYARD_PRO_ULTRA_3.0/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
